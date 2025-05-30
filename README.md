@@ -1,1 +1,1 @@
-![CartZilla Preview](./HomePage.png)
+![Alt text](frontend/HomePage.png)
