@@ -15,8 +15,24 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, "Password is required"],
+        required: function() {
+            return !this.googleId; // Password not required if signing up with Google
+        },
         minlength: [6, "Password must be at least 6 characters long"]
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true // Allows multiple null values
+    },
+    profilePicture: {
+        type: String,
+        default: ""
+    },
+    authProvider: {
+        type: String,
+        enum: ["local", "google"],
+        default: "local"
     },
     cartItems: [
         {
@@ -39,10 +55,10 @@ const userSchema = new mongoose.Schema({
     timestamps: true // createdAt and updatedAt fields
 })
 
-
 // Middleware to hash password before saving
 userSchema.pre("save", async function(next) {
-    if(!this.isModified("password")) {
+    // Skip password hashing if user is signing up with Google
+    if(!this.isModified("password") || !this.password) {
         return next();
     }
 
@@ -57,6 +73,7 @@ userSchema.pre("save", async function(next) {
 
 // Method to compare password
 userSchema.methods.comparePassword = async function(password) {
+    if (!this.password) return false; // No password set (Google user)
     return await bcrypt.compare(password, this.password);
 }
 

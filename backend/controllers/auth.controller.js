@@ -61,6 +61,8 @@ export const signup = async (req, res) => {
 			name: user.name,
 			email: user.email,
 			role: user.role,
+            profilePicture: user.profilePicture,
+            authProvider: user.authProvider
 		});
     } catch (error) {
         console.log("Error in signup controller", error.message);
@@ -82,7 +84,9 @@ export const login = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                profilePicture: user.profilePicture,
+                authProvider: user.authProvider
             });
         } else {
 			res.status(400).json({ message: "Invalid email or password" });
@@ -143,11 +147,32 @@ export const refreshToken = async (req, res) => {
     }
 }
 
-// todo: implement getProfile controller
 export const getProfile = async (req, res) => {
 	try {
 		res.json(req.user);
 	} catch (error) {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
+};
+
+// Google OAuth Success Handler
+export const googleAuthSuccess = async (req, res) => {
+    try {
+        const user = req.user;
+        const { accessToken, refreshToken } = generateToken(user._id);
+        await storeRefreshToken(user._id, refreshToken);
+        
+        setCookies(res, accessToken, refreshToken);
+        
+        // Redirect to frontend with success
+        res.redirect(`${process.env.CLIENT_URL}?auth=success`);
+    } catch (error) {
+        console.log("Error in googleAuthSuccess controller", error.message);
+        res.redirect(`${process.env.CLIENT_URL}?auth=error`);
+    }
+};
+
+// Google OAuth Failure Handler
+export const googleAuthFailure = (req, res) => {
+    res.redirect(`${process.env.CLIENT_URL}?auth=error`);
 };

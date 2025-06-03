@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import passport from './lib/passport.js';
 
 import authRoutes from './routes/auth.route.js';
 import productRoutes from './routes/product.route.js';
@@ -20,8 +21,10 @@ const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
 app.use(express.json({ limit: "10mb" })); // allow express to parse JSON data
-
 app.use(cookieParser()); // to parse cookies from the request
+
+// Initialize Passport
+app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
@@ -38,16 +41,7 @@ if (process.env.NODE_ENV === "production") {
 	});
 }
 
-// if (process.env.NODE_ENV === "production") {
-//     app.use(express.static(path.join(__dirname, "/frontend/dist")));
-
-//     app.get("/*", (req, res, next) => {
-//         //if (req.path.startsWith("/api")) return next();
-//         res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
-//     });
-// }
-
 app.listen(PORT, () => {
   console.log('Server is running on http://localhost:' + PORT);
   connectDB();
-});  
+});

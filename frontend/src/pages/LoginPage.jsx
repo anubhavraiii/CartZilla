@@ -1,15 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LogIn, Mail, Lock, ArrowRight, Loader } from "lucide-react";
 import { useUserStore } from "../stores/useUserStore";
-//import { useUserStore } from "../stores/useUserStore";
+import GoogleSignInButton from "../components/GoogleSignInButton";
+import { toast } from "react-hot-toast";
 
 const LoginPage = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const navigate = useNavigate();
 
-	const { login, loading } = useUserStore();
+	const { login, loading, checkAuth } = useUserStore();
+
+	// Handle Google auth callback
+	useEffect(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const authStatus = urlParams.get('auth');
+		
+		if (authStatus === 'success') {
+			toast.success('Successfully signed in with Google!');
+			checkAuth(); // Refresh user state
+			navigate('/', { replace: true });
+		} else if (authStatus === 'error') {
+			toast.error('Google sign-in failed. Please try again.');
+			navigate('/login', { replace: true });
+		}
+	}, [navigate, checkAuth]);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -35,7 +52,22 @@ const LoginPage = () => {
 				transition={{ duration: 0.8, delay: 0.2 }}
 			>
 				<div className='bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10'>
-					<form onSubmit={handleSubmit} className='space-y-6'>
+					{/* Google Sign In Button */}
+					<GoogleSignInButton />
+					
+					{/* Divider */}
+					<div className='mt-6'>
+						<div className='relative'>
+							<div className='absolute inset-0 flex items-center'>
+								<div className='w-full border-t border-gray-600' />
+							</div>
+							<div className='relative flex justify-center text-sm'>
+								<span className='px-2 bg-gray-800 text-gray-400'>Or continue with</span>
+							</div>
+						</div>
+					</div>
+
+					<form onSubmit={handleSubmit} className='space-y-6 mt-6'>
 						<div>
 							<label htmlFor='email' className='block text-sm font-medium text-gray-300'>
 								Email address
