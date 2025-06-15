@@ -7,8 +7,8 @@ import GoogleSignInButton from "../components/GoogleSignInButton";
 import { toast } from "react-hot-toast";
 
 const LoginPage = () => {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
+	const [email, setEmail] = useState("admin@gmail.com");
+	const [password, setPassword] = useState("123456");
 	const navigate = useNavigate();
 
 	const { login, loading, checkAuth } = useUserStore();
